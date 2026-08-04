@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build output
+build/
+dist/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+
+# Environment variables
+.env*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# AI tools
+.agents/
+.codex/
+
+# Generated Prisma client
+/src/generated/prisma
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+compose-dev.yml
+# Local cache/temp
+.cache/
+.tmp/
+.temp/
+
+# Generated lock files
+skills-lock.json

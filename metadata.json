@@ -1,0 +1,6 @@
+{
+  "name": "Habit Tracker",
+  "description": "A modern, high-converting habit tracking application with automated streaks, category filtering, heatmap visualizer, and local storage persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

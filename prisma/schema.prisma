@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("HABIT_FLOW_DATABASE_URL")
+}
+
+enum FrequencyType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+model Habit {
+  id          String            @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  categoryId  String
+  frequency   FrequencyType
+  targetDays  Int[]
+  targetValue Float?
+  unit        String?
+  createdAt   DateTime          @default(now())
+  archived    Boolean           @default(false)
+  color       String?
+
+  completions HabitCompletion[]
+
+  @@index([userId])
+  @@map("habits")
+}
+
+model HabitCompletion {
+  id        String   @id @default(uuid())
+  habitId   String
+  dateStr   String   // YYYY-MM-DD format
+  completed Boolean  @default(false)
+  value     Float?
+  timestamp DateTime @default(now())
+  notes     String?
+
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, dateStr])
+  @@map("habit_completions")
+}
