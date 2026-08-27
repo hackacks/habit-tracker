@@ -11,39 +11,70 @@ enum FrequencyType {
   DAILY
   WEEKLY
   MONTHLY
+  SPECIFIC_DAYS
+  INTERVAL
+  FLEXIBLE
   CUSTOM
 }
 
-model Habit {
-  id          String            @id @default(uuid())
-  userId      String
-  title       String
-  description String?
-  categoryId  String
-  frequency   FrequencyType
-  targetDays  Int[]
-  targetValue Float?
-  unit        String?
-  createdAt   DateTime          @default(now())
-  archived    Boolean           @default(false)
-  color       String?
+enum EvaluationType {
+  YES_NO
+  NUMERIC
+  CHECKLIST
+  TIMER
+  STOPWATCH
+}
 
-  completions HabitCompletion[]
+enum PriorityLevel {
+  LOW
+  DEFAULT
+  HIGH
+  URGENT
+}
+
+model Habit {
+  id              String            @id @default(uuid())
+  userId          String
+  title           String
+  description     String?
+  categoryId      String
+  frequency       FrequencyType
+  targetDays      Int[]             // For SPECIFIC_DAYS and CUSTOM
+  targetValue     Float?
+  unit            String?
+  
+  evaluationType  EvaluationType    @default(YES_NO)
+  checklistItems  String[]          @default([])
+  
+  startDate       String?           // YYYY-MM-DD
+  endDate         String?           // YYYY-MM-DD
+  interval        Int?              // For INTERVAL frequency
+  targetPerPeriod Int?              // For FLEXIBLE frequency
+  periodType      String?           // 'WEEK' or 'MONTH' for FLEXIBLE
+  
+  priority        PriorityLevel     @default(DEFAULT)
+  weeklyTarget    Float?
+  monthlyTarget   Float?
+
+  createdAt       DateTime          @default(now())
+  archived        Boolean           @default(false)
+  color           String?
+  completions     HabitCompletion[]
 
   @@index([userId])
   @@map("habits")
 }
 
 model HabitCompletion {
-  id        String   @id @default(uuid())
-  habitId   String
-  dateStr   String   // YYYY-MM-DD format
-  completed Boolean  @default(false)
-  value     Float?
-  timestamp DateTime @default(now())
-  notes     String?
-
-  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  id             String   @id @default(uuid())
+  habitId        String
+  dateStr        String   // YYYY-MM-DD format
+  completed      Boolean  @default(false)
+  value          Float?
+  checklistState Json?    // JSON for storing true/false per item
+  timestamp      DateTime @default(now())
+  notes          String?
+  habit          Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
 
   @@unique([habitId, dateStr])
   @@map("habit_completions")

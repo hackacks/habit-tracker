@@ -35,7 +35,7 @@ Thumbs.db
 # Docker
 .dockerignore
 docker-compose.override.yml
-compose-dev.yml
+
 # Local cache/temp
 .cache/
 .tmp/

@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_HABIT_FLOW_COGNITO_REGION: ${VITE_HABIT_FLOW_COGNITO_REGION}
+        VITE_HABIT_FLOW_COGNITO_USER_POOL_ID: ${VITE_HABIT_FLOW_COGNITO_USER_POOL_ID}
+        VITE_HABIT_FLOW_COGNITO_APP_CLIENT_ID: ${VITE_HABIT_FLOW_COGNITO_APP_CLIENT_ID}
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    depends_on:
+      - postgresdb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+  postgresdb:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+volumes:
+  postgres_data:

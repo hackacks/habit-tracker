@@ -11,7 +11,11 @@ export interface Category {
   iconName: string;
 }
 
-export type FrequencyType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM';
+export type FrequencyType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SPECIFIC_DAYS' | 'INTERVAL' | 'FLEXIBLE' | 'CUSTOM';
+
+export type EvaluationType = 'YES_NO' | 'NUMERIC' | 'CHECKLIST' | 'TIMER';
+
+export type PriorityLevel = 'LOW' | 'DEFAULT' | 'HIGH' | 'URGENT';
 
 export interface Habit {
   id: string;
@@ -22,6 +26,20 @@ export interface Habit {
   targetDays?: number[]; // 0 = Sun, 1 = Mon, ..., 6 = Sat
   targetValue?: number; // e.g., 8 (glasses of water), 30 (mins)
   unit?: string; // e.g., "mins", "pages", "liters", "times"
+  evaluationType?: EvaluationType;
+  checklistItems?: string[];
+  
+  startDate?: string;
+  endDate?: string;
+  interval?: number;
+  targetPerPeriod?: number;
+  periodType?: 'WEEK' | 'MONTH';
+  
+  priority?: PriorityLevel;
+  weeklyTarget?: number;
+  monthlyTarget?: number;
+  annualTarget?: number;
+
   createdAt: string; // ISO date string YYYY-MM-DD
   archived?: boolean;
   color?: string;
@@ -32,6 +50,7 @@ export interface Habit {
 export interface HabitCompletion {
   completed: boolean;
   value?: number;
+  checklistState?: Record<string, boolean>; // e.g., { "Read": true, "Stretch": false }
   timestamp: string; // ISO timestamp string
   notes?: string;
 }

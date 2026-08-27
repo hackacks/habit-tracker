@@ -15,6 +15,8 @@ export default defineConfig(() => {
       },
     },
     server: {
+      allowedHosts: true as const,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
       // HMR might be disabled via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

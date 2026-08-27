@@ -10,12 +10,9 @@ import {
   Database, 
   User,
   Calendar,
-  Search,
-  Moon,
-  Sun
+  Search
 } from 'lucide-react';
 import { formatDisplayDate, getTodayStr } from '../utils/habitUtils';
-import { useTheme } from './ThemeProvider';
 
 interface HeaderProps {
   activeTab: ViewTab;
@@ -43,7 +40,6 @@ export const Header: React.FC<HeaderProps> = ({
   setSearchQuery,
 }) => {
   const isToday = selectedDate === getTodayStr();
-  const { theme, setTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-30 bg-white dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-4 lg:px-8 py-3.5 transition-all">
@@ -66,22 +62,22 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Streak Flame Badge */}
-          <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-xl shadow-sm">
-            <Flame className="w-4 h-4 text-indigo-400 fill-indigo-500/20" />
-            <div className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              <span className="text-indigo-400 font-bold">{totalStreak}</span> Day Streak
+          <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 px-3 py-1.5 rounded-xl shadow-xs">
+            <Flame className="w-4 h-4 text-indigo-600 dark:text-indigo-400 fill-indigo-500/20" />
+            <div className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold">{totalStreak}</span> Day Streak
             </div>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto max-w-full">
+        <nav className="flex items-center gap-1 bg-zinc-100/80 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab('today')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
               activeTab === 'today'
-                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/20 font-semibold'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                ? 'bg-white dark:bg-indigo-500 text-indigo-600 dark:text-white shadow-xs dark:shadow-md dark:shadow-indigo-500/20 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800/60'
             }`}
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
@@ -92,8 +88,8 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('heatmap')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
               activeTab === 'heatmap'
-                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/20 font-semibold'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                ? 'bg-white dark:bg-indigo-500 text-indigo-600 dark:text-white shadow-xs dark:shadow-md dark:shadow-indigo-500/20 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800/60'
             }`}
           >
             <Grid3X3 className="w-3.5 h-3.5" />
@@ -104,8 +100,8 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('analytics')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
               activeTab === 'analytics'
-                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/20 font-semibold'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                ? 'bg-white dark:bg-indigo-500 text-indigo-600 dark:text-white shadow-xs dark:shadow-md dark:shadow-indigo-500/20 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800/60'
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5" />
@@ -116,8 +112,8 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('prd')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
               activeTab === 'prd'
-                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/20 font-semibold'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                ? 'bg-white dark:bg-indigo-500 text-indigo-600 dark:text-white shadow-xs dark:shadow-md dark:shadow-indigo-500/20 font-bold'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/60 dark:hover:bg-zinc-800/60'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -136,39 +132,30 @@ export const Header: React.FC<HeaderProps> = ({
               placeholder="Search habits..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition"
             />
           </div>
 
           {/* Date Picker Button */}
           {activeTab === 'today' && (
-            <div className="relative flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-300">
-              <Calendar className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
+            <div className="relative flex items-center bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 shadow-xs">
+              <Calendar className="w-3.5 h-3.5 mr-1.5 text-indigo-600 dark:text-indigo-400" />
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-transparent text-zinc-800 dark:text-zinc-200 focus:outline-none text-xs cursor-pointer font-medium"
+                className="bg-transparent text-zinc-800 dark:text-zinc-200 focus:outline-none text-xs cursor-pointer font-semibold"
               />
               {!isToday && (
                 <button
                   onClick={() => setSelectedDate(getTodayStr())}
-                  className="ml-1.5 text-[10px] text-indigo-400 font-semibold hover:underline"
+                  className="ml-1.5 text-[10px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
                 >
                   Today
                 </button>
               )}
             </div>
           )}
-
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            title="Toggle Theme"
-            className="p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 rounded-xl transition"
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
 
           {/* Data Backup / Settings */}
           <button

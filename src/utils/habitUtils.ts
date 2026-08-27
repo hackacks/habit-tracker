@@ -65,7 +65,12 @@ export function getDayName(dateStr: string | undefined | null): string {
  * Check if date falls on a target frequency in UTC
  */
 export function isHabitScheduledForDate(habit: Habit | undefined | null, dateStr: string | undefined | null): boolean {
-  if (!habit) return false;
+  if (!habit || !dateStr) return false;
+  
+  // Check Lifespan bounds
+  if (habit.startDate && dateStr < habit.startDate) return false;
+  if (habit.endDate && dateStr > habit.endDate) return false;
+
   const parts = parseDateStr(dateStr);
   if (!parts) return false;
   const [year, month, day] = parts;
@@ -74,16 +79,32 @@ export function isHabitScheduledForDate(habit: Habit | undefined | null, dateStr
   const dayOfWeek = date.getUTCDay(); // 0 = Sun, 1 = Mon, ...
   
   if (habit.frequency === 'DAILY') return true;
-  // Previously WEEKLY (weekdays) was Mon-Fri, CUSTOM (weekends) was Sat-Sun in sample code.
-  if (habit.frequency === 'WEEKLY') return dayOfWeek >= 1 && dayOfWeek <= 5;
-  if (habit.frequency === 'MONTHLY') return dayOfWeek === 1; // Arbitrary for monthly
-  if (habit.frequency === 'CUSTOM') {
+  
+  if (habit.frequency === 'SPECIFIC_DAYS' || habit.frequency === 'CUSTOM') {
     if (!habit.targetDays || !Array.isArray(habit.targetDays) || habit.targetDays.length === 0) {
-      return false; // Edge case: custom frequency with no target days scheduled
+      return false;
     }
     return habit.targetDays.includes(dayOfWeek);
   }
-  
+
+  if (habit.frequency === 'INTERVAL' && habit.interval) {
+    const startStr = habit.startDate || habit.createdAt.split('T')[0];
+    const startParts = parseDateStr(startStr);
+    if (!startParts) return true;
+    const start = new Date(Date.UTC(startParts[0], startParts[1] - 1, startParts[2]));
+    const diffTime = date.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return false;
+    return diffDays % habit.interval === 0;
+  }
+
+  if (habit.frequency === 'FLEXIBLE') {
+    return true; // Shows up every day; streak calculation would ideally aggregate per period
+  }
+
+  if (habit.frequency === 'WEEKLY') return dayOfWeek >= 1 && dayOfWeek <= 5;
+  if (habit.frequency === 'MONTHLY') return dayOfWeek === 1;
+
   return true;
 }
 

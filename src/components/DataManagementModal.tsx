@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import { Habit } from '../types';
 import { getInitialSampleHabits } from '../utils/habitUtils';
 import { Database, Download, Upload, RefreshCw, Trash2, X, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../api';
 import { ConfirmModal } from './ConfirmModal';
 
@@ -105,16 +104,12 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <>
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-6"
-        >
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center gap-2">
@@ -218,10 +213,9 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
               Close
             </button>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
-    <ConfirmModal
+      <ConfirmModal
       isOpen={confirmAction === 'reset'}
       title="Reset to Demo Data"
       message="Reset habits to initial sample demo data? This will overwrite current entries."

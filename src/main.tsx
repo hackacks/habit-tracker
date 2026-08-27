@@ -8,7 +8,7 @@ import { ThemeProvider } from './components/ThemeProvider';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="system" storageKey="habitflow-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="habitflow-theme">
         <App />
       </ThemeProvider>
     </ErrorBoundary>

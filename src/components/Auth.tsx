@@ -92,8 +92,8 @@ export const Auth: React.FC<{ onAuthenticated: () => void }> = ({ onAuthenticate
           {isConfirming ? 'Verify Account' : isLogin ? 'Sign In' : 'Sign Up'}
         </h2>
         
-        {error && <div className="bg-red-900/30 text-red-400 p-3 rounded-xl mb-4 text-sm border border-red-900/50">{error}</div>}
-        {success && <div className="bg-emerald-900/30 text-emerald-400 p-3 rounded-xl mb-4 text-sm border border-emerald-900/50">{success}</div>}
+        {error && <div className="bg-rose-50 dark:bg-red-900/30 text-rose-700 dark:text-red-400 p-3 rounded-xl mb-4 text-sm border border-rose-200 dark:border-red-900/50">{error}</div>}
+        {success && <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 p-3 rounded-xl mb-4 text-sm border border-emerald-200 dark:border-emerald-900/50">{success}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isConfirming ? (

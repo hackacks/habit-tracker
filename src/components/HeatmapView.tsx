@@ -3,7 +3,6 @@ import { Habit } from '../types';
 import { CATEGORIES } from '../utils/categories';
 import { getOffsetDateStr, formatDisplayDate, isHabitScheduledForDate } from '../utils/habitUtils';
 import { Calendar, Grid, Flame, ChevronRight, Info } from 'lucide-react';
-import { motion } from 'motion/react';
 
 interface HeatmapViewProps {
   habits: Habit[];
@@ -76,21 +75,21 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
   // Intensity color picker
   const getCellBgClass = (percentage: number, totalScheduled: number) => {
     if (totalScheduled === 0) return 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-800/40 opacity-40';
-    if (percentage === 0) return 'bg-zinc-100 dark:bg-zinc-800/90 border-zinc-200 dark:border-zinc-800';
-    if (percentage <= 25) return 'bg-emerald-950/80 border-emerald-800/50 text-emerald-300';
-    if (percentage <= 50) return 'bg-emerald-800/80 border-emerald-700/60 text-emerald-200';
-    if (percentage <= 75) return 'bg-emerald-600/90 border-emerald-500/80 text-emerald-100 shadow-sm';
-    return 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-emerald-300 text-white shadow-md shadow-emerald-500/30';
+    if (percentage === 0) return 'bg-zinc-100 dark:bg-zinc-800/90 border-zinc-200/80 dark:border-zinc-800';
+    if (percentage <= 25) return 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-300 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300';
+    if (percentage <= 50) return 'bg-emerald-300 dark:bg-emerald-800/80 border-emerald-400 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200';
+    if (percentage <= 75) return 'bg-emerald-500 dark:bg-emerald-600/90 border-emerald-600 dark:border-emerald-500/80 text-white dark:text-emerald-100 shadow-xs';
+    return 'bg-emerald-600 dark:bg-gradient-to-tr dark:from-emerald-500 dark:to-teal-400 border-emerald-700 dark:border-emerald-300 text-white shadow-xs';
   };
 
   return (
     <div className="space-y-8">
       
       {/* Top Heatmap Control Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <Grid className="w-5 h-5 text-indigo-400" />
+            <Grid className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Consistency Matrix</h2>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -116,11 +115,11 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
           </select>
 
           {/* Timeframe selector */}
-          <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium">
+          <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium">
             <button
               onClick={() => setTimeRangeDays(90)}
               className={`px-3 py-1 rounded-lg transition ${
-                timeRangeDays === 90 ? 'bg-indigo-500 text-white font-semibold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                timeRangeDays === 90 ? 'bg-indigo-500 text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               90 Days
@@ -128,7 +127,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
             <button
               onClick={() => setTimeRangeDays(180)}
               className={`px-3 py-1 rounded-lg transition ${
-                timeRangeDays === 180 ? 'bg-indigo-500 text-white font-semibold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                timeRangeDays === 180 ? 'bg-indigo-500 text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               180 Days
@@ -136,7 +135,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
             <button
               onClick={() => setTimeRangeDays(365)}
               className={`px-3 py-1 rounded-lg transition ${
-                timeRangeDays === 365 ? 'bg-indigo-500 text-white font-semibold' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                timeRangeDays === 365 ? 'bg-indigo-500 text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               1 Year
@@ -147,12 +146,12 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
       </div>
 
       {/* GitHub-Style Master Heatmap Grid Box */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 relative overflow-x-auto shadow-xl">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-6 relative overflow-x-auto shadow-xs">
         
         {/* Heatmap Matrix Header Info */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-indigo-400" />
+            <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>
               Showing activity over the past <strong>{timeRangeDays} days</strong>
             </span>
@@ -162,10 +161,10 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] uppercase font-semibold text-zinc-500 dark:text-zinc-400 mr-1">Less</span>
             <div className="w-3.5 h-3.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800" />
-            <div className="w-3.5 h-3.5 rounded bg-emerald-950 border border-emerald-800/50" />
-            <div className="w-3.5 h-3.5 rounded bg-emerald-800 border border-emerald-700" />
-            <div className="w-3.5 h-3.5 rounded bg-emerald-600 border border-emerald-500" />
-            <div className="w-3.5 h-3.5 rounded bg-emerald-500 border border-emerald-400" />
+            <div className="w-3.5 h-3.5 rounded bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800/50" />
+            <div className="w-3.5 h-3.5 rounded bg-emerald-300 dark:bg-emerald-800 border border-emerald-400 dark:border-emerald-700" />
+            <div className="w-3.5 h-3.5 rounded bg-emerald-500 dark:bg-emerald-600 border border-emerald-600 dark:border-emerald-500" />
+            <div className="w-3.5 h-3.5 rounded bg-emerald-600 dark:bg-emerald-500 border border-emerald-700 dark:border-emerald-400" />
             <span className="text-[10px] uppercase font-semibold text-zinc-500 dark:text-zinc-400 ml-1">More</span>
           </div>
         </div>
@@ -180,9 +179,8 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
                   const bgClass = getCellBgClass(stats.percentage, stats.totalScheduled);
 
                   return (
-                    <motion.div
+                    <div
                       key={dStr}
-                      whileHover={{ scale: 1.25, zIndex: 10 }}
                       onMouseEnter={() =>
                         setHoveredDateInfo({
                           dateStr: dStr,
@@ -197,7 +195,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
                           onToggleCompletion(habits[0].id, dStr);
                         }
                       }}
-                      className={`w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-sm border cursor-pointer transition-all duration-150 ${bgClass}`}
+                      className={`w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-sm border cursor-pointer transition-all duration-150 hover:scale-125 hover:z-10 ${bgClass}`}
                     />
                   );
                 })}
@@ -213,7 +211,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
               <span className="font-bold text-zinc-800 dark:text-zinc-200">
                 {formatDisplayDate(hoveredDateInfo.dateStr)}
               </span>
-              <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              <span className="text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/20">
                 {hoveredDateInfo.completedCount} / {hoveredDateInfo.totalScheduled} Completed ({hoveredDateInfo.percentage}%)
               </span>
             </div>
@@ -240,14 +238,14 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
             return (
               <div
                 key={h.id}
-                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 space-y-3 hover:border-zinc-300 transition"
+                className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 space-y-3 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs transition"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: category.color }} />
                     <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-50">{h.title}</h4>
                   </div>
-                  <span className={`text-[10px] uppercase font-medium px-2 py-0.5 rounded-md ${category.badgeBg} ${category.badgeText}`}>
+                  <span className={`text-[10px] uppercase font-semibold px-2.5 py-0.5 rounded-md border ${category.badgeBg} ${category.badgeText} ${category.borderColor}`}>
                     {category.name}
                   </span>
                 </div>
@@ -266,10 +264,10 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ habits, onToggleComple
                         title={`${dStr}: ${isDone ? 'Completed' : isSched ? 'Missed' : 'Not Scheduled'}`}
                         className={`w-3.5 h-3.5 flex-shrink-0 rounded-sm border ${
                           isDone
-                            ? 'bg-emerald-500 border-emerald-400'
+                            ? 'bg-emerald-500 border-emerald-600 dark:border-emerald-400'
                             : isSched
                             ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-800'
-                            : 'bg-zinc-950 border-zinc-200 dark:border-zinc-800'
+                            : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200/50 dark:border-zinc-800'
                         }`}
                       />
                     );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Habit } from '../types';
 import { CATEGORIES } from '../utils/categories';
 import { calculateHabitStats, getOffsetDateStr, isHabitScheduledForDate, getDayName } from '../utils/habitUtils';
@@ -14,27 +14,27 @@ import {
   Briefcase, 
   Coins, 
   Sparkles,
-  Calendar
+  Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
+import { NumericWidget, ChecklistWidget, TimerWidget } from './HabitEvaluationWidgets';
 
 interface HabitCardProps {
   habit: Habit;
   selectedDate: string;
-  onToggleCompletion: (habitId: string, dateStr: string) => void;
+  onToggleCompletion: (habitId: string, dateStr: string, updateData?: any) => void;
   onEditHabit: (habit: Habit) => void;
   onDeleteHabit: (habitId: string) => void;
 }
 
-export const HabitCard: React.FC<HabitCardProps> = ({
+export const HabitCard: React.FC<HabitCardProps> = ({ 
   habit,
   selectedDate,
   onToggleCompletion,
   onEditHabit,
-  onDeleteHabit,
+  onDeleteHabit
 }) => {
-  const [showMenu, setShowMenu] = React.useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const category = CATEGORIES[habit.categoryId] || CATEGORIES.personal;
   const isCompletedToday = Boolean(habit.completions && habit.completions[selectedDate]?.completed);
@@ -53,6 +53,45 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   };
 
   const handleMainToggle = () => {
+    if (habit.evaluationType === 'TIMER') {
+      if (!isCompletedToday) {
+        // Cannot manually check off countdown timer habits without running and completing the countdown!
+        return;
+      } else {
+        // If already completed, clicking resets the completion
+        onToggleCompletion(habit.id, selectedDate, {
+          value: 0,
+          completed: false
+        });
+        return;
+      }
+    }
+
+    if (habit.evaluationType === 'CHECKLIST' && habit.checklistItems && habit.checklistItems.length > 0) {
+      if (isCompletedToday) {
+        const clearedState = habit.checklistItems.reduce((acc, it) => ({ ...acc, [it]: false }), {} as Record<string, boolean>);
+        onToggleCompletion(habit.id, selectedDate, {
+          checklistState: clearedState,
+          completed: false,
+          value: 0
+        });
+      } else {
+        const allCheckedState = habit.checklistItems.reduce((acc, it) => ({ ...acc, [it]: true }), {} as Record<string, boolean>);
+        onToggleCompletion(habit.id, selectedDate, {
+          checklistState: allCheckedState,
+          completed: true,
+          value: habit.checklistItems.length
+        });
+        confetti({
+          particleCount: 40,
+          spread: 60,
+          origin: { y: 0.7 },
+          colors: [category.color, '#f59e0b', '#3b82f6', '#10b981'],
+        });
+      }
+      return;
+    }
+
     onToggleCompletion(habit.id, selectedDate);
     // Trigger confetti on fresh completion
     if (!isCompletedToday) {
@@ -75,13 +114,20 @@ export const HabitCard: React.FC<HabitCardProps> = ({
     return { offset, dateStr: dStr, isDone, isScheduled, dayLabel };
   });
 
+  const handleMiniDayToggle = (dateStr: string, isDone: boolean) => {
+    if (habit.evaluationType === 'TIMER') {
+      if (!isDone) {
+        return;
+      } else {
+        onToggleCompletion(habit.id, dateStr, { value: 0, completed: false });
+        return;
+      }
+    }
+    onToggleCompletion(habit.id, dateStr);
+  };
+
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
+    <div
       className={`group relative bg-white dark:bg-zinc-900 border rounded-2xl p-5 transition-all duration-200 hover:shadow-xl ${
         isCompletedToday
           ? 'border-indigo-500/40 bg-white dark:bg-zinc-900'
@@ -92,29 +138,32 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         
         {/* Left Side: Animated Completion Toggle Button */}
         <div className="flex items-start gap-3.5">
-          <motion.button
-            whileTap={{ scale: 0.85 }}
+          <button
             onClick={handleMainToggle}
-            className={`mt-0.5 relative flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+            disabled={habit.evaluationType === 'TIMER' && !isCompletedToday}
+            title={
+              habit.evaluationType === 'TIMER' && !isCompletedToday
+                ? 'Countdown habit: Start and complete the timer below to check off this habit'
+                : isCompletedToday
+                ? 'Click to reset completion'
+                : 'Click to mark as complete'
+            }
+            className={`mt-0.5 relative flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-150 ${
               isCompletedToday
-                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30 scale-105'
-                : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-700 text-transparent hover:border-indigo-500/50 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30 scale-105 active:scale-90 cursor-pointer'
+                : habit.evaluationType === 'TIMER'
+                ? 'bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 cursor-not-allowed'
+                : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-700 text-transparent hover:border-indigo-500/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-90 cursor-pointer'
             }`}
           >
-            <AnimatePresence mode="wait">
-              {isCompletedToday ? (
-                <motion.div
-                  key="checked"
-                  initial={{ scale: 0, rotate: -45 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  exit={{ scale: 0 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                >
-                  <Check className="w-5 h-5 stroke-[2.5]" />
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </motion.button>
+            {isCompletedToday ? (
+              <div className="transition-transform transform scale-100">
+                <Check className="w-5 h-5 stroke-[2.5]" />
+              </div>
+            ) : habit.evaluationType === 'TIMER' ? (
+              <Clock className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+            ) : null}
+          </button>
 
           {/* Title, Category & Description */}
           <div className="space-y-1">
@@ -126,6 +175,22 @@ export const HabitCard: React.FC<HabitCardProps> = ({
               >
                 {habit.title}
               </h3>
+
+              {habit.priority === 'HIGH' && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                  High
+                </span>
+              )}
+              {habit.priority === 'URGENT' && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 uppercase tracking-wider">
+                  Urgent
+                </span>
+              )}
+              {habit.priority === 'LOW' && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border border-zinc-500/20 uppercase tracking-wider">
+                  Low
+                </span>
+              )}
 
               {/* Category Pill */}
               <span
@@ -153,6 +218,17 @@ export const HabitCard: React.FC<HabitCardProps> = ({
                 </span>
               )}
             </div>
+
+            {/* Evaluation Widget */}
+            {habit.evaluationType === 'NUMERIC' && (
+              <NumericWidget habit={habit} completionData={habit.completions?.[selectedDate]} onUpdate={(data) => onToggleCompletion(habit.id, selectedDate, data)} />
+            )}
+            {habit.evaluationType === 'CHECKLIST' && (
+              <ChecklistWidget habit={habit} completionData={habit.completions?.[selectedDate]} onUpdate={(data) => onToggleCompletion(habit.id, selectedDate, data)} />
+            )}
+            {habit.evaluationType === 'TIMER' && (
+              <TimerWidget habit={habit} completionData={habit.completions?.[selectedDate]} onUpdate={(data) => onToggleCompletion(habit.id, selectedDate, data)} />
+            )}
           </div>
         </div>
 
@@ -225,11 +301,15 @@ export const HabitCard: React.FC<HabitCardProps> = ({
           {miniPastDays.map((d) => (
             <button
               key={d.dateStr}
-              onClick={() => onToggleCompletion(habit.id, d.dateStr)}
-              title={`${d.dayLabel} (${d.dateStr}): ${d.isDone ? 'Completed' : 'Missed'}`}
+              onClick={() => handleMiniDayToggle(d.dateStr, d.isDone)}
+              title={
+                habit.evaluationType === 'TIMER' && !d.isDone
+                  ? `${d.dayLabel} (${d.dateStr}): Countdown timer required`
+                  : `${d.dayLabel} (${d.dateStr}): ${d.isDone ? 'Completed' : 'Missed'}`
+              }
               className={`flex flex-col items-center gap-1 p-1 rounded-md transition ${
                 d.dateStr === selectedDate ? 'bg-indigo-500/10 ring-1 ring-indigo-500/50' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
-              }`}
+              } ${habit.evaluationType === 'TIMER' && !d.isDone ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
             >
               <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-mono">{d.dayLabel}</span>
               <div
@@ -248,6 +328,6 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         </div>
       </div>
 
-    </motion.div>
+    </div>
   );
 };
