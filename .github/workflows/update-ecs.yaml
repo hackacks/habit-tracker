@@ -1,4 +1,4 @@
-name: Image push to ECR
+name: Image push to ECR and deploy to ECS
 on:
   push:
     branches:
@@ -8,6 +8,10 @@ env:
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   IMAGE_TAG: ${{ github.sha }}
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+  ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
+  CONTAINER_NAME: "habitflow"
 
   VITE_HABIT_FLOW_COGNITO_REGION: ${{ vars.VITE_HABIT_FLOW_COGNITO_REGION }}
   VITE_HABIT_FLOW_COGNITO_USER_POOL_ID: ${{ vars.VITE_HABIT_FLOW_COGNITO_USER_POOL_ID }}
@@ -39,5 +43,33 @@ jobs:
           -f Dockerfile \
           .
       - name: Push to Amazon ECR
+        id: push-ecr
         run: |
-          docker push "${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          docker push "$IMAGE_URI"
+          echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+      
+      - name: Download ECS task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ env.ECS_TASK_DEFINITION }}" \
+            --query taskDefinition \
+            --region "${{ env.AWS_REGION }}" \
+            > task-definition.json
+
+      - name: Render ECS task definition with new image
+        id: render-task-definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: "${{ steps.push-ecr.outputs.image-uri }}"
+      
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+        
