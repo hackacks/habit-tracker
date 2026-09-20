@@ -6,6 +6,8 @@ import { habitRepository } from './src/repositories/habitRepository';
 import prisma from './src/lib/prisma';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
+import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 
 const client = jwksClient({
   jwksUri: `https://cognito-idp.${process.env.HABIT_FLOW_COGNITO_REGION}.amazonaws.com/${process.env.HABIT_FLOW_COGNITO_USER_POOL_ID}/.well-known/jwks.json`,
@@ -39,12 +41,76 @@ const requireAuth = (req: any, res: any, next: NextFunction) => {
   });
 };
 
+// Zod Schemas
+const habitSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional().nullable(),
+  categoryId: z.string().optional().nullable(),
+  frequency: z.string().optional(),
+  targetDays: z.array(z.number()).optional(),
+  targetValue: z.number().optional().nullable(),
+  unit: z.string().optional().nullable(),
+  evaluationType: z.string().optional(),
+  checklistItems: z.array(z.string()).optional(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  interval: z.number().optional().nullable(),
+  targetPerPeriod: z.number().optional().nullable(),
+  periodType: z.string().optional().nullable(),
+  priority: z.string().optional(),
+  weeklyTarget: z.number().optional().nullable(),
+  monthlyTarget: z.number().optional().nullable(),
+  createdAt: z.union([z.string(), z.date()]).optional(),
+  archived: z.boolean().optional(),
+  color: z.string().optional().nullable(),
+}).passthrough(); // passthrough in case frontend sends extra metadata
+
+const completionSchema = z.object({
+  completed: z.boolean(),
+  value: z.number().optional().nullable(),
+  checklistState: z.record(z.string(), z.boolean()).optional().nullable(),
+  timestamp: z.union([z.string(), z.date()]),
+  notes: z.string().optional().nullable(),
+}).passthrough();
+
+const batchHabitSchema = z.array(
+  habitSchema.extend({
+    completions: z.record(z.string(), completionSchema).optional()
+  })
+);
+
+// Validation Middleware
+const validate = (schema: z.ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
+  try {
+    req.body = schema.parse(req.body);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid input', details: error.issues });
+    }
+    return res.status(400).json({ error: 'Invalid input' });
+  }
+};
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(cors());
   app.use(express.json({ limit: '10mb' })); // Increased limit for imports
+
+  // Rate Limiting Middleware
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: { error: 'Too many requests, please try again later.' }
+  });
+
+  // Apply rate limiting to all /api/ routes
+  app.use('/api/', apiLimiter);
 
   // --- API ROUTES ---
 
@@ -86,7 +152,7 @@ async function startServer() {
   });
 
   // Create a habit
-  app.post('/api/habits', requireAuth, async (req: any, res: any) => {
+  app.post('/api/habits', requireAuth, validate(habitSchema), async (req: any, res: any) => {
     try {
       const habit = await habitRepository.createHabit(req.userId, req.body);
       res.status(201).json(habit);
@@ -97,7 +163,7 @@ async function startServer() {
   });
 
   // Update a habit
-  app.put('/api/habits/:id', requireAuth, async (req: any, res: any) => {
+  app.put('/api/habits/:id', requireAuth, validate(habitSchema), async (req: any, res: any) => {
     try {
       const habit = await habitRepository.updateHabit(req.userId, req.params.id, req.body);
       res.json(habit);
@@ -119,7 +185,7 @@ async function startServer() {
   });
 
   // Toggle habit completion
-  app.post('/api/habits/:id/completions/:dateStr', requireAuth, async (req: any, res: any) => {
+  app.post('/api/habits/:id/completions/:dateStr', requireAuth, validate(completionSchema), async (req: any, res: any) => {
     try {
       await habitRepository.toggleCompletion(req.userId, req.params.id, req.params.dateStr, req.body);
       res.status(200).json({ success: true });
@@ -130,7 +196,7 @@ async function startServer() {
   });
 
   // Import / Batch create habits
-  app.post('/api/habits/batch', requireAuth, async (req: any, res: any) => {
+  app.post('/api/habits/batch', requireAuth, validate(batchHabitSchema), async (req: any, res: any) => {
     try {
       await habitRepository.batchCreateHabits(req.userId, req.body);
       res.status(201).json({ success: true });
