@@ -1,5 +1,8 @@
 name: Image push to ECR and deploy to ECS
+
+on:
   workflow_dispatch:
+
 env:
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   IMAGE_TAG: ${{ github.sha }}
