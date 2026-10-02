@@ -3,6 +3,11 @@ variable "aws_region" {
   type        = string
 }
 
+variable "acm_domain_name" {
+  description = "My root domain in ACM"
+  type        = string
+}
+
 variable "domain_name" {
   description = "My root domain in Route 53/ACM"
   type        = string

@@ -33,7 +33,6 @@ Thumbs.db
 /src/generated/prisma
 
 # Docker
-.dockerignore
 docker-compose.override.yml
 
 # Terraform

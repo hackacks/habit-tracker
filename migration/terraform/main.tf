@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "state-bucket-ji0qu"
-    key            = "habit-tracker-migration/terraform.tfstate"
-    use_lockfile     = true
-    region         = "ap-south-1"
+    bucket       = "state-bucket-ji0qu"
+    key          = "habit-tracker-migration/terraform.tfstate"
+    use_lockfile = true
+    region       = "ap-south-1"
   }
   required_providers {
     aws = {
@@ -23,13 +23,13 @@ provider "aws" {
   region = "us-east-1"
 }
 
-data "aws_route53_zone" "hackack-tech" {
+data "aws_route53_zone" "my_zone" {
   name         = var.domain_name
   private_zone = false
 }
 
 data "aws_acm_certificate" "my_certificate" {
-  domain   = var.domain_name
+  domain   = var.acm_domain_name
   provider = aws.us-east-1
   statuses = ["ISSUED"]
 }
@@ -119,9 +119,9 @@ resource "aws_cloudfront_distribution" "my_distribution" {
   }
 }
 
-#create a route53 record to point to the S3 bucket
-resource "aws_route53_record" "my_bucket_record" {
-  zone_id = data.aws_route53_zone.hackack-tech.zone_id
+#create a route53 record to point to the cloudfront distribution
+resource "aws_route53_record" "my_record" {
+  zone_id = data.aws_route53_zone.my_zone.zone_id
   name    = var.subdomain
   type    = "A"
   alias {
@@ -131,7 +131,7 @@ resource "aws_route53_record" "my_bucket_record" {
   }
 }
 
-# Allow public GET only for .html objects for cloudfront to access the S3 bucket content
+# Allow GET objects for cloudfront to access the S3 bucket
 resource "aws_s3_bucket_policy" "my_bucket_policy" {
   bucket = aws_s3_bucket.my_bucket.id
 
@@ -160,8 +160,4 @@ resource "aws_s3_bucket_policy" "my_bucket_policy" {
       }
     ]
   })
-
-  depends_on = [
-    aws_cloudfront_distribution.my_distribution
-  ]
 }
